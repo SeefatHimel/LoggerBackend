@@ -49,8 +49,8 @@ export class UsersService {
     }
 
     const token = await this.createToken(user);
-    const { firstName, lastName, email } = user;
-    return { firstName, lastName, email, ...token };
+    const { id, firstName, lastName, email } = user;
+    return { id, firstName, lastName, email, ...token };
   }
 
   async createToken(user: any): Promise<{ access_token: string }> {
