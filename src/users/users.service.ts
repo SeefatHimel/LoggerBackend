@@ -48,7 +48,9 @@ export class UsersService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    return await this.createToken(user);
+    const token = await this.createToken(user);
+    const { firstName, lastName, email } = user;
+    return { firstName, lastName, email, ...token };
   }
 
   async createToken(user: any): Promise<{ access_token: string }> {
