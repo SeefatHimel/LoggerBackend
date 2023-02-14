@@ -14,13 +14,9 @@ export class SessionsService {
   async getSessions(user: User, taskId: number) {
     await this.validateTaskAccess(user, taskId);
 
-    const activeSession = await this.prisma.session.findFirst({
-      where: { taskId, endTime: null },
+    return await this.prisma.session.findMany({
+      where: { taskId },
     });
-    const completedSessions = await this.prisma.session.findMany({
-      where: { taskId, endTime: { not: null } },
-    });
-    return { activeSession, completedSessions };
   }
 
   async createSession(user: User, dto: SessionDto) {
