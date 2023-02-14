@@ -8,7 +8,12 @@ export class TasksService {
   constructor(private prisma: PrismaService) {}
 
   async getTasks(user: User): Promise<Task[]> {
-    return await this.prisma.task.findMany({ where: { userId: user.id } });
+    return await this.prisma.task.findMany({
+      where: { userId: user.id },
+      include: {
+        sessions: true,
+      },
+    });
   }
 
   async createTask(user: User, dto: CreateTaskDto) {
