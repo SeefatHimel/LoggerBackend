@@ -20,6 +20,12 @@ import { GetUser } from 'src/decorator';
 export class TasksController {
   constructor(private tasksService: TasksService) {}
 
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  async getTasks(@GetUser() user: User): Promise<Task[]> {
+    return this.tasksService.getTasks(user);
+  }
+
   @Post()
   @UseGuards(JwtAuthGuard)
   async createTask(
@@ -27,12 +33,6 @@ export class TasksController {
     @Body() createTaskDto: CreateTaskDto,
   ): Promise<Task> {
     return this.tasksService.createTask(user, createTaskDto);
-  }
-
-  @Get()
-  @UseGuards(JwtAuthGuard)
-  async getTasks(@GetUser() user: User): Promise<Task[]> {
-    return this.tasksService.getTasks(user);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
