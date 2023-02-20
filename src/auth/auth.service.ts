@@ -7,7 +7,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDto, RegisterDto } from './dto';
 
 @Injectable()
-export class UsersService {
+export class AuthService {
   constructor(
     private prisma: PrismaService,
     private config: ConfigService,
