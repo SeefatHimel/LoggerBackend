@@ -7,7 +7,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDto, RegisterDto } from './dto';
 
 @Injectable()
-export class UsersService {
+export class AuthService {
   constructor(
     private prisma: PrismaService,
     private config: ConfigService,
@@ -48,7 +48,9 @@ export class UsersService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    return await this.createToken(user);
+    const token = await this.createToken(user);
+    const { id, firstName, lastName, email } = user;
+    return { id, firstName, lastName, email, ...token };
   }
 
   async createToken(user: any): Promise<{ access_token: string }> {
