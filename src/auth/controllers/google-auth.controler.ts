@@ -14,7 +14,7 @@ export class GoogleOAuth2Controller {
 
   @Get('google-redirect')
   @UseGuards(GoogleOAuthGuard)
-  @Redirect()
+  @Redirect('http://localhost:3001/', 302)
   googleAuthRedirect(@Request() req: Request) {
     console.log('google-redirect');
     return this.appService.googleLogin(req);

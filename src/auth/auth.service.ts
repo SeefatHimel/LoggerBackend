@@ -71,8 +71,10 @@ export class AuthService {
       console.log('No user from google');
       return 'No user from google';
     }
-    // console.log(req);
-    const headers: any = req.headers;
+    console.log(req.user);
+    const referer: any = req.headers?.referer
+      ? req.headers?.referer
+      : 'http://localhost:3001/';
 
     console.log('User information from google');
     const data = {
@@ -87,17 +89,18 @@ export class AuthService {
     if (oldUser) {
       console.log('Old User Found');
       const token = await this.createToken(oldUser);
-      const { id, firstName, lastName, email } = oldUser;
+      const { id, firstName, lastName, email, picture } = oldUser;
       const data = `${JSON.stringify({
         id,
         firstName,
         lastName,
         email,
+        picture,
         ...token,
       })}`;
       const encodedData = Buffer.from(data).toString('base64');
       return {
-        url: `${headers.referer}socialLogin/googleRedirectCB?data=${encodedData}`,
+        url: `${referer}socialLogin/redirect?data=${encodedData}`,
         statusCode: 302,
       };
     }
@@ -108,20 +111,95 @@ export class AuthService {
         email: true,
         firstName: true,
         lastName: true,
+        picture: true,
       },
     });
     const token = await this.createToken(user);
-    const { id, firstName, lastName, email } = user;
+    const { id, firstName, lastName, email, picture } = user;
     const useData = `${JSON.stringify({
       id,
       firstName,
       lastName,
       email,
+      picture,
       ...token,
     })}`;
     const encodedData = Buffer.from(useData).toString('base64');
     return {
-      url: `${headers.referer}socialLogin/googleRedirectCB?data=${encodedData}`,
+      url: `${referer}socialLogin/redirect?data=${encodedData}`,
+      statusCode: 302,
+    };
+  }
+  async facebookLogin(req: any) {
+    if (!req.user) {
+      console.log('No user from Facebook');
+      return 'No user from Facebook';
+    }
+    console.log(
+      '🚀 ~ file: auth.service.ts:130 ~ AuthService ~ facebookLogin ~ req.user:',
+      req.user,
+    );
+    // console.log(req);
+    const referer: any = req.headers?.referer
+      ? req.headers?.referer
+      : 'http://localhost:3001/';
+    // console.log(
+    //   '🚀 ~ file: auth.service.ts:139 ~ AuthService ~ facebookLogin ~ req:',
+    //   req,
+    // );
+    req.user = req.user.user;
+    console.log('User information from Facebook');
+    const data = {
+      email: req.user.email,
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
+      picture: req.user.picture,
+    };
+    const tmpEmail = req.user.email;
+    const oldUser = await this.prisma.user.findUnique({
+      where: { email: tmpEmail },
+    });
+    if (oldUser) {
+      console.log('Old User Found');
+      const token = await this.createToken(oldUser);
+      const { id, firstName, lastName, email, picture } = oldUser;
+      const data = `${JSON.stringify({
+        id,
+        firstName,
+        lastName,
+        email,
+        picture,
+        ...token,
+      })}`;
+      const encodedData = Buffer.from(data).toString('base64');
+      return {
+        url: `${referer}socialLogin/redirect?data=${encodedData}`,
+        statusCode: 302,
+      };
+    }
+    const user = await this.prisma.user.create({
+      data,
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        picture: true,
+      },
+    });
+    const token = await this.createToken(user);
+    const { id, firstName, lastName, email, picture } = user;
+    const useData = `${JSON.stringify({
+      id,
+      firstName,
+      lastName,
+      email,
+      picture,
+      ...token,
+    })}`;
+    const encodedData = Buffer.from(useData).toString('base64');
+    return {
+      url: `${referer}socialLogin/redirect?data=${encodedData}`,
       statusCode: 302,
     };
   }
