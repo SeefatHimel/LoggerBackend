@@ -99,7 +99,7 @@ export class JiraOAuth2Strategy extends PassportStrategy(Strategy, 'jira') {
 
     const data = {
       email: myProfile.email,
-      name: myProfile.name,
+      firstName: myProfile.name,
       picture: myProfile.picture,
     };
 

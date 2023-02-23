@@ -1,6 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-// import { User } from '@prisma/client';
 import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -19,7 +18,8 @@ export class AuthService {
 
     const data = {
       email: dto.email,
-      name: dto.name,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
       hash: hashedPassword,
     };
     const user = await this.prisma.user.create({
@@ -27,7 +27,8 @@ export class AuthService {
       select: {
         id: true,
         email: true,
-        name: true,
+        firstName: true,
+        lastName: true,
       },
     });
     const token = await this.createToken(user);
@@ -50,8 +51,12 @@ export class AuthService {
     }
 
     const token = await this.createToken(user);
-    const { id, name, email } = user;
-    return { id, name, email, ...token };
+    return {
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      ...token,
+    };
   }
 
   async createToken(user: any): Promise<{ access_token: string }> {
