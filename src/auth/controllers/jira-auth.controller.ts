@@ -25,6 +25,6 @@ export class JiraOAuth2Controller {
   @UseGuards(AuthGuard('jira'))
   async callback(@Req() req: Request, @Res() res: Response) {
     // This route handler will only be called if the authentication succeeds
-    res.redirect('/');
+    res.redirect('http://localhost:3000/');
   }
 }

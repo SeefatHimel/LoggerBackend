@@ -19,8 +19,7 @@ export class AuthService {
 
     const data = {
       email: dto.email,
-      firstName: dto.firstName,
-      lastName: dto.lastName,
+      name: dto.name,
       hash: hashedPassword,
     };
     const user = await this.prisma.user.create({
@@ -28,8 +27,7 @@ export class AuthService {
       select: {
         id: true,
         email: true,
-        firstName: true,
-        lastName: true,
+        name: true,
       },
     });
     const token = await this.createToken(user);
@@ -43,14 +41,17 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const isPasswordMatched = await argon.verify(user.hash, dto.password);
+    let isPasswordMatched;
+    if (user.hash) {
+      isPasswordMatched = await argon.verify(user.hash, dto.password);
+    }
     if (!isPasswordMatched) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const token = await this.createToken(user);
-    const { id, firstName, lastName, email } = user;
-    return { id, firstName, lastName, email, ...token };
+    const { id, name, email } = user;
+    return { id, name, email, ...token };
   }
 
   async createToken(user: any): Promise<{ access_token: string }> {

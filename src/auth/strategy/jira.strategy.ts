@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
-import { Request } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
+import { IntegrationType, User } from '@prisma/client';
 import { Strategy, VerifyCallback } from 'passport-oauth2';
-import { ParsedQs } from 'qs';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { JiraClient } from 'src/utils/jira';
 
@@ -92,11 +90,43 @@ export class JiraOAuth2Strategy extends PassportStrategy(Strategy, 'jira') {
   ) {
     const client = new JiraClient(accessToken);
     const myProfile = await client.getMyProfile();
-    console.log(myProfile);
-    const user = await this.prisma.user.findUnique({
+
+    let user = await this.prisma.user.findUnique({
       where: {
-        // jira_id: myProfile.account_id,
+        email: myProfile.email,
       },
     });
+
+    const data = {
+      email: myProfile.email,
+      name: myProfile.name,
+      picture: myProfile.picture,
+    };
+
+    if (!user) {
+      user = await this.prisma.user.create({
+        data,
+      });
+    }
+
+    let integration = await this.prisma.integrations.findUnique({
+      where: {
+        id: myProfile.account_id,
+      },
+    });
+
+    if (!integration) {
+      integration = await this.prisma.integrations.create({
+        data: {
+          userId: user.id,
+          id: myProfile.account_id as string,
+          type: IntegrationType.JIRA,
+          accessToken: accessToken,
+          refreshToken: refreshToken,
+        },
+      });
+    }
+
+    return user;
   }
 }
