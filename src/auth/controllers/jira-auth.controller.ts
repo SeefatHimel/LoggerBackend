@@ -1,24 +1,30 @@
-import { Body, Controller, Get, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Req,
+  Res,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from '@prisma/client';
 import { GetUser } from 'src/decorator';
-import { Request } from 'express';
+import { Request, Response } from 'express';
+import { TokenErrorFilter } from 'src/filters/token-error.filter';
 
 @Controller('auth/jira')
 export class JiraOAuth2Controller {
   @Get()
-  @UseGuards(AuthGuard('jira-oauth2'))
+  @UseGuards(AuthGuard('jira'))
   login() {
     // Initiates the Jira OAuth 2.0 authentication flow
   }
 
   @Get('callback')
-  @UseGuards(AuthGuard('jira-oauth2'))
-  async(@Req() req: Request) {
-    // console.log(req);
-    // const { access_token, refresh_token, expires_in } = req.user;
-    // console.log(access_token, '------\n\n');
-    // console.log(refresh_token, '------\n\n');
-    // console.log(expires_in, '------\n\n');
+  @UseGuards(AuthGuard('jira'))
+  async callback(@Req() req: Request, @Res() res: Response) {
+    // This route handler will only be called if the authentication succeeds
+    res.redirect('/');
   }
 }
