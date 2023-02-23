@@ -78,6 +78,10 @@ export class AuthService {
     const referer: any = req.headers?.referer
       ? req.headers?.referer
       : 'http://localhost:3001/';
+    // console.log(
+    //   '🚀 ~ file: auth.service.ts:79 ~ AuthService ~ googleLogin ~ referer:',
+    //   referer,
+    // );
 
     console.log('User information from google');
     const data = {
@@ -138,11 +142,10 @@ export class AuthService {
       console.log('No user from Facebook');
       return 'No user from Facebook';
     }
-    console.log(
-      '🚀 ~ file: auth.service.ts:130 ~ AuthService ~ facebookLogin ~ req.user:',
-      req.user,
-    );
-    // console.log(req);
+    // console.log(
+    //   '🚀 ~ file: auth.service.ts:130 ~ AuthService ~ facebookLogin ~ req.user:',
+    //   req.user,
+    // );
     const referer: any = req.headers?.referer
       ? req.headers?.referer
       : 'http://localhost:3001/';
