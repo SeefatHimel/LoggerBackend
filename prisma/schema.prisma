@@ -14,15 +14,25 @@ datasource db {
 model User {
   id        Int      @default(autoincrement()) @id
   email     String   @unique
-  hash      String?
-  picture   String?
-  firstName String?
-  lastName  String? 
-
+  hash     String?
+  firstName      String?
+  lastName String?
+  picture String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   tasks     Task[]
+  integrations Integrations[]
+}
+
+model Integrations {
+  id        String     @id
+  type  IntegrationType
+  accessToken String
+  refreshToken String
+
+  user User @relation(fields: [userId], references: [id])
+  userId    Int
 }
 
 model Task {
@@ -77,4 +87,8 @@ enum Labels {
 enum SessionStatus {
   STARTED
   STOPPED
+}
+
+enum IntegrationType {
+  JIRA
 }
