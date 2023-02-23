@@ -1,4 +1,4 @@
-import { Injectable, Redirect, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 // import { User } from '@prisma/client';
 import * as argon from 'argon2';
@@ -71,6 +71,9 @@ export class AuthService {
       console.log('No user from google');
       return 'No user from google';
     }
+    // console.log(req);
+    const headers: any = req.headers;
+
     console.log('User information from google');
     const data = {
       email: req.user.email,
@@ -94,7 +97,7 @@ export class AuthService {
       })}`;
       const encodedData = Buffer.from(data).toString('base64');
       return {
-        url: `http://localhost:3001/socialLogin/googleRedirectCB?data=${encodedData}`,
+        url: `${headers.referer}socialLogin/googleRedirectCB?data=${encodedData}`,
         statusCode: 302,
       };
     }
@@ -118,7 +121,7 @@ export class AuthService {
     })}`;
     const encodedData = Buffer.from(useData).toString('base64');
     return {
-      url: `http://localhost:3001/socialLogin/googleRedirectCB?data=${encodedData}`,
+      url: `${headers.referer}socialLogin/googleRedirectCB?data=${encodedData}`,
       statusCode: 302,
     };
   }
