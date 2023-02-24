@@ -1,6 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-// import { User } from '@prisma/client';
 import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -43,14 +42,21 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const isPasswordMatched = await argon.verify(user.hash, dto.password);
+    let isPasswordMatched;
+    if (user.hash) {
+      isPasswordMatched = await argon.verify(user.hash, dto.password);
+    }
     if (!isPasswordMatched) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const token = await this.createToken(user);
-    const { id, firstName, lastName, email } = user;
-    return { id, firstName, lastName, email, ...token };
+    return {
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      ...token,
+    };
   }
 
   async createToken(user: any): Promise<{ access_token: string }> {
