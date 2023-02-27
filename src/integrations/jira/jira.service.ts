@@ -1,8 +1,10 @@
+import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { AuthorizeJiraDto } from './dto';
 
 @Injectable()
 export class JiraService {
+  constructor(private httpService: HttpService) {}
   async getIntegrationLink(state: string | undefined) {
     let stateParam = '';
     if (state) {
@@ -13,6 +15,7 @@ export class JiraService {
 
   async createIntegration(dto: AuthorizeJiraDto) {
     // get access token and refresh tokens and store those on integrations table.
+
     return 'We are working very hard to integrate this.';
   }
 }

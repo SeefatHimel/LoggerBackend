@@ -22,14 +22,15 @@ model User {
   updatedAt DateTime @updatedAt
 
   tasks     Task[]
-  integrations Integrations[]
+  integrations Integration[]
 }
 
-model Integrations {
+model Integration {
   id        String     @id
   type  IntegrationType
   accessToken String
   refreshToken String
+  site String?
 
   user User @relation(fields: [userId], references: [id])
   userId    Int
