@@ -90,6 +90,7 @@ export class JiraOAuth2Strategy extends PassportStrategy(Strategy, 'jira') {
   ) {
     const client = new JiraClient(accessToken);
     const myProfile = await client.getMyProfile();
+    console.log(await client.getMyProfile());
 
     let user = await this.prisma.user.findUnique({
       where: {
