@@ -1,10 +1,14 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthorizeJiraDto } from './dto';
 
 @Injectable()
 export class JiraService {
-  constructor(private httpService: HttpService) {}
+  constructor(
+    private httpService: HttpService,
+    private prisma: PrismaService,
+  ) {}
   async getIntegrationLink(state: string | undefined) {
     let stateParam = '';
     if (state) {
