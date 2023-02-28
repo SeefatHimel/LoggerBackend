@@ -1,4 +1,6 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { User } from '@prisma/client';
+import { GetUser } from 'src/decorator';
 import { JwtAuthGuard } from 'src/guard';
 import { AuthorizeJiraDto } from './dto';
 import { JiraService } from './jira.service';
@@ -15,7 +17,10 @@ export class JiraController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async createIntegration(@Body() dto: AuthorizeJiraDto) {
-    return this.jiraService.createIntegration(dto);
+  async createIntegration(
+    @GetUser() user: User,
+    @Body() dto: AuthorizeJiraDto,
+  ) {
+    return this.jiraService.createIntegration(dto, user);
   }
 }
