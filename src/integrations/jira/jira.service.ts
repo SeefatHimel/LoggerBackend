@@ -1,6 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { IntegrationType } from '@prisma/client';
+import { lastValueFrom, map } from 'rxjs';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthorizeJiraDto } from './dto';
 
@@ -25,75 +26,49 @@ export class JiraService {
     );
     // get access token and refresh tokens and store those on integrations table.
     const url = 'https://auth.atlassian.com/oauth/token';
-    const headers = { 'Content-Type': 'application/json' };
+    const headers: any = { 'Content-Type': 'application/json' };
     const body = {
       grant_type: 'authorization_code',
       client_id: process.env.JIRA_CLIENT_ID,
       client_secret: process.env.JIRA_SECRET_KEY,
       code: dto.code,
-      redirect_uri: 'http://localhost:3001/integrations/jira/callback',
+      redirect_uri: 'http://localhost:3000/integrations/jira/callback',
     };
-    console.log(
-      '🚀 ~ file: jira.service.ts:35 ~ JiraService ~ createIntegration ~ body:',
-      body,
-    );
-    try {
-      const response = await this.httpService
-        .post(url, body, { headers })
-        .toPromise();
-      // return response?.data;
-      console.log(
-        '🚀 ~ file: jira.service.ts:41 ~ JiraService ~ createIntegration ~ response?.data:',
-        response?.data,
-      );
-      const data = {
-        site: 'sample',
-        type: IntegrationType.JIRA,
-        id: '1',
-        accessToken: response?.data.access_token as string,
-        refreshToken: response?.data.refresh_token as string,
-        userId: user.id as number,
-      };
-      console.log(
-        '🚀 ~ file: jira.service.ts:50 ~ JiraService ~ createIntegration ~ data:',
-        data,
-      );
-      const oldIntegration = await this.prisma.integration.findUnique({
-        where: { id: data.id },
-      });
-      console.log(
-        '🚀 ~ file: jira.service.ts:63 ~ JiraService ~ createIntegration ~ oldIntegration:',
-        oldIntegration,
-      );
-      if (oldIntegration) return { message: 'Was Already Integrated' };
-      try {
-        const integration = await this.prisma.integration.create({
-          data,
-          select: {
-            id: true,
-            accessToken: true,
-            refreshToken: true,
-            site: true,
-            user: true,
-            userId: true,
-          },
-        });
-        console.log(
-          '🚀 ~ file: jira.service.ts:72 ~ JiraService ~ createIntegration ~ integration:',
-          integration,
-        );
-        return { message: 'Integration Successful' };
-      } catch (error) {
-        console.log('Error');
 
-        throw new BadRequestException('Bad Req');
-      }
-    } catch (error) {
-      console.log(
-        '🚀 ~ file: jira.service.ts:92 ~ JiraService ~ createIntegration ~ error:',
-        error,
-      );
-      throw new BadRequestException('Bad Request');
-    }
+    const resp = (
+      await lastValueFrom(this.httpService.post(url, body, { headers }))
+    ).data;
+
+    // get resources from jira
+    headers['Authorization'] = `Bearer ${resp['access_token']}`;
+
+    const urlResources =
+      'https://api.atlassian.com/oauth/token/accessible-resources';
+
+    const respResources = (
+      await lastValueFrom(this.httpService.get(urlResources, { headers }))
+    ).data;
+
+    // add all available resources in our database if doesn't exist
+    respResources.forEach((element: any) => {
+      this.prisma.integration.upsert({
+        where: {
+          integrationIdentifier: { userId: user.id, siteId: element.id },
+        },
+        update: {
+          accessToken: resp.access_token,
+          refreshToken: resp.refresh_token,
+          site: element.url,
+        },
+        create: {
+          siteId: element.id,
+          userId: user.id,
+          type: IntegrationType.JIRA,
+          accessToken: resp.access_token,
+          refreshToken: resp.refresh_token,
+          site: element.url,
+        },
+      });
+    });
   }
 }
