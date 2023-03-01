@@ -6,6 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "rimraf": "./node_modules/rimraf/bin.js",
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -43,7 +44,7 @@
     "passport-jwt": "^4.0.1",
     "passport-oauth2": "^1.6.1",
     "reflect-metadata": "^0.1.13",
-    "rimraf": "./node_modules/rimraf/bin.js",
+    "rimraf": "^3.0.2",
     "rxjs": "^7.2.0"
   },
   "devDependencies": {
