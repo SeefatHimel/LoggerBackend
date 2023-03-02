@@ -75,9 +75,10 @@ export class AuthService {
       return 'No user from google';
     }
     console.log(req.user);
-    const referer: any = req.headers?.referer
-      ? req.headers?.referer
-      : 'http://localhost:3001/';
+    // const referer: any = req.headers?.referer
+    //   ? req.headers?.referer
+    //   : 'http://localhost:3001/';
+    const referer: any = 'https://oversear.vercel.app/';
     // console.log(
     //   '🚀 ~ file: auth.service.ts:79 ~ AuthService ~ googleLogin ~ referer:',
     //   referer,
