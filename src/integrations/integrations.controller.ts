@@ -15,26 +15,6 @@ export class IntegrationsController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async getIntegrations(@GetUser() user: User, @Body() dto: any) {
-    console.log(
-      '🚀 ~ file: integrations.controller.ts:14 ~ IntegrationsController ~ getIntegrations ~ user:',
-      user,
-    );
-    const integrations = await this.prisma.integration.findMany({
-      where: { userId: user.id },
-    });
-    console.log(
-      '🚀 ~ file: integrations.controller.ts:25 ~ IntegrationsController ~ getIntegrations ~ integrations:',
-      integrations,
-    );
-    // const oldUser = await this.prisma.user.findUnique({
-    //   where: { email: user.email },
-    // });
-    // console.log(
-    //   '🚀 ~ file: integrations.controller.ts:25 ~ IntegrationsController ~ getIntegrations ~ oldUser:',
-    //   oldUser,
-    //   oldUser?.integrations,
-    // );
-    // return await this.integrationsService.createSession(user, dto);
-    return { integrations: integrations };
+    return this.integrationsService.getIntegrations(user);
   }
 }

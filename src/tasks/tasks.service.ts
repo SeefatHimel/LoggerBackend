@@ -70,32 +70,25 @@ export class TasksService {
         },
       });
 
-      // const client = new Version3Client({
-      //   host: integration.site as string,
-      //   authentication: {
-      //     oauth2: {
-      //       accessToken: integration.accessToken,
-      //     },
-      //   },
-      // });
-
       headers['Authorization'] = `Bearer ${updated_integration.accessToken}`;
-      const searchUrl = `${integration.site}/rest/api/2/search?jql=assignee=currentuser()`;
+      const searchUrl = `https://api.atlassian.com/ex/jira/${integration.siteId}/rest/api/3/search?jql=assignee=currentUser()`;
       // currently status is not considered.
       const respTasks = (
         await lastValueFrom(this.httpService.get(searchUrl, { headers }))
       ).data;
 
-      respTasks.forEach(async (jiraTask: any) => {
-        const isExists = await this.prisma.taskIntegration.findUnique({
+      console.log(respTasks);
+
+      respTasks.issues.forEach(async (jiraTask: any) => {
+        const doesExist = await this.prisma.taskIntegration.findUnique({
           where: {
             integratedTaskIdentifier: {
-              integratedTaskId: jiraTask.id,
+              integratedTaskId: Number(jiraTask.id),
               type: IntegrationType.JIRA,
             },
           },
         });
-        if (!isExists) {
+        if (!doesExist) {
           const task = await this.prisma.task.create({
             data: {
               userId: user.id,
@@ -106,7 +99,7 @@ export class TasksService {
           await this.prisma.taskIntegration.create({
             data: {
               taskId: task.id,
-              integratedTaskId: jiraTask.id,
+              integratedTaskId: Number(jiraTask.id),
               type: IntegrationType.JIRA,
               url: jiraTask.self,
             },
