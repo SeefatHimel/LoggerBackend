@@ -145,7 +145,6 @@ export class SessionsService {
     worklogHeader.setContentType('application/json');
     worklogHeader.setAuthorization('Bearer ' + updated_integration.accessToken);
     worklogHeader.setAccept('application/json');
-    worklogHeader.setContentLength(Infinity);
 
     taskIntegrations.forEach(async (taskIntegration) => {
       const worklogUrl = `https://api.atlassian.com/ex/jira/${jiraIntegration.siteId}/rest/api/3/issue/${taskIntegration.integratedTaskId}/worklog`;
