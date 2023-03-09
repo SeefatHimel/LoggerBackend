@@ -19,7 +19,8 @@ export class JiraService {
       stateParam = `&state=${state}`;
     }
     const callback_url = this.config.get('JIRA_CALLBACK_URL');
-    return `https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=B23TKtFF39H59pJCQotdrzqzEWoxeiUy&scope=read:jira-work manage:jira-project manage:jira-data-provider manage:jira-webhook write:jira-work read:jira-user manage:jira-configuration offline_access&redirect_uri=${callback_url}${stateParam}&response_type=code&prompt=consent`;
+    const client_id = this.config.get('JIRA_CLIENT_ID');
+    return `https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=${client_id}&scope=read:jira-work manage:jira-project manage:jira-data-provider manage:jira-webhook write:jira-work read:jira-user manage:jira-configuration offline_access&redirect_uri=${callback_url}${stateParam}&response_type=code&prompt=consent`;
   }
 
   async createIntegration(dto: AuthorizeJiraDto, user: User) {

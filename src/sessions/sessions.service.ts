@@ -12,6 +12,8 @@ import {
   Status,
   User,
 } from '@prisma/client';
+import { AxiosHeaders } from 'axios';
+import { session } from 'passport';
 import { lastValueFrom } from 'rxjs';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SessionDto } from './dto';
@@ -44,7 +46,8 @@ export class SessionsService {
     });
 
     if (activeSession) {
-      await this.stopSessionUtil(activeSession.id);
+      const updated_sesssion = await this.stopSessionUtil(activeSession.id);
+      await this.logToIntegrations(user.id, dto.taskId, updated_sesssion);
     }
 
     return await this.prisma.session.create({
@@ -92,7 +95,11 @@ export class SessionsService {
       return;
     }
     const timeSpent =
-      session.endTime.getSeconds() - session.startTime.getSeconds();
+      session.endTime.getSeconds() - session.startTime.getSeconds() + 60;
+
+    if (timeSpent < 60) {
+      return;
+    }
 
     const jiraIntegration = await this.prisma.integration.findFirst({
       where: {
@@ -134,28 +141,61 @@ export class SessionsService {
       },
     });
 
-    headers['Authorization'] = `Bearer ${updated_integration.accessToken}`;
+    const worklogHeader = new AxiosHeaders();
+    worklogHeader.set('Content-Type', 'application/json');
+    worklogHeader.set(
+      'Authorization',
+      'Bearer ' + updated_integration.accessToken,
+    );
+    worklogHeader.set(
+      'Cookie',
+      'atlassian.xsrf.token=72000998-61f7-4166-a6ee-b5d1dda1a9a8_1c6457ec85d070579648e1907633c6333b5b3c86_lin',
+    );
 
     taskIntegrations.forEach(async (taskIntegration) => {
       const worklogUrl = `https://api.atlassian.com/ex/jira/${jiraIntegration.siteId}/rest/api/3/issue/${taskIntegration.integratedTaskId}/worklog`;
+      // const worklogUrl =
+      // 'https://api.atlassian.com/ex/jira/0f06b500-1b44-4005-a147-5b2ebe38c710/rest/api/3/issue/10002/worklog';
+      const isoString = session.startTime.toISOString();
+      const formattedString = isoString.slice(0, -1) + '+0000';
       const bodyData = {
-        comment: `I did some work from ${session.startTime} to ${session.endTime}`,
-        started: session.startTime.toISOString(),
+        comment: {
+          content: [
+            {
+              content: [
+                {
+                  text: 'I did some work here.',
+                  type: 'text',
+                },
+              ],
+              type: 'paragraph',
+            },
+          ],
+          type: 'doc',
+          version: 1,
+        },
+        started: formattedString,
         timeSpentSeconds: timeSpent,
       };
       console.log(jiraIntegration.accessToken);
       console.log(worklogUrl);
-      console.log(bodyData);
+      console.log(JSON.stringify(bodyData));
 
-      const worklogResp = (
-        await lastValueFrom(
-          this.httpService.post(worklogUrl, bodyData, headers),
-        )
-      ).data;
-      console.log(worklogResp);
+      try {
+        const worklogResp = (
+          await lastValueFrom(
+            this.httpService.post(worklogUrl, bodyData, { ...worklogHeader }),
+          )
+        ).data;
+        console.log('========================');
 
-      if (worklogResp.status == 201) {
-        console.log('successfully updated');
+        console.log(worklogResp);
+
+        if (worklogResp.status == 201) {
+          console.log('successfully updated');
+        }
+      } catch (error) {
+        console.error(error);
       }
     });
     return { success: true, msg: 'successfully updated to jira' };
