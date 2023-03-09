@@ -142,15 +142,10 @@ export class SessionsService {
     });
 
     const worklogHeader = new AxiosHeaders();
-    worklogHeader.set('Content-Type', 'application/json');
-    worklogHeader.set(
-      'Authorization',
-      'Bearer ' + updated_integration.accessToken,
-    );
-    worklogHeader.set(
-      'Cookie',
-      'atlassian.xsrf.token=72000998-61f7-4166-a6ee-b5d1dda1a9a8_1c6457ec85d070579648e1907633c6333b5b3c86_lin',
-    );
+    worklogHeader.setContentType('application/json');
+    worklogHeader.setAuthorization('Bearer ' + updated_integration.accessToken);
+    worklogHeader.setAccept('application/json');
+    worklogHeader.setContentLength(Infinity);
 
     taskIntegrations.forEach(async (taskIntegration) => {
       const worklogUrl = `https://api.atlassian.com/ex/jira/${jiraIntegration.siteId}/rest/api/3/issue/${taskIntegration.integratedTaskId}/worklog`;
