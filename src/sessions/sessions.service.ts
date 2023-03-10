@@ -47,7 +47,7 @@ export class SessionsService {
 
     if (activeSession) {
       const updated_sesssion = await this.stopSessionUtil(activeSession.id);
-      await this.logToIntegrations(user.id, dto.taskId, updated_sesssion);
+      // await this.logToIntegrations(user.id, dto.taskId, updated_sesssion);
     }
 
     return await this.prisma.session.create({
@@ -67,7 +67,7 @@ export class SessionsService {
     }
 
     const updated_session = await this.stopSessionUtil(activeSession.id);
-    await this.logToIntegrations(user.id, taskId, updated_session);
+    // await this.logToIntegrations(user.id, taskId, updated_session);
     return updated_session;
   }
 
